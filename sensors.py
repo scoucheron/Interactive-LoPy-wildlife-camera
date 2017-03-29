@@ -32,11 +32,12 @@ class Sensors():
     def light_level(self):
         i2c = machine.I2C(0, machine.I2C.MASTER, baudrate=10000)
         sensor = tsl2561.TSL2561(i2c)
+        lumen = sensor.read()
 
-        if lumen < 1:
+        if lumen < 0.75:
             return False
         else:
-            return sensor
+            return lumen
 
     ''' Detects motion through a PIR-sensor '''
     def movement_detection(self):

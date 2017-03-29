@@ -6,7 +6,10 @@ import time
 import pycom
 import sensors
 
-
+'''
+    Initialize everything. Make a connection to the
+    LoRaWAN network and create a socket which can be used by everyone.
+'''
 pycom.heartbeat(False)
 pycom.rgbled(0x000000)
 #Initialize LoRa in LORAWAN mode
@@ -30,9 +33,18 @@ while not lora.has_joined():
     count = count + 1
 
 #The socket which is to be used by everyone
-sck = socket.socket(socker.AF_LORA, socket.SOCK_RAW)
+sck = socket.socket(socket.AF_LORA, socket.SOCK_RAW)
 
-''' TODO (Should do when finished):
+# set the LoRaWAN data rate
+sck.setsockopt(socket.SOL_LORA, socket.SO_DR, 5)
+
+# make the socket non-blocking
+sck.setblocking(False)
+
+sensor = sensors.Sensors()
+
+'''
+TODO (Should do when finished):
 
 The PIR-sensor tells the controller when there is movement, then does the rest
 - "Check" for movement
@@ -53,22 +65,36 @@ These checks should be done once a day
 - Check if the acceleration or the direction the camera is off
     * If the acceleration is too hight, or the wrong direction, send WARNING
 
-- Check the light level
-    * If it is too low, send WARNING to user
 '''
+def check_level_and_send(value):
+    msg = "Something is wrong. Check the camera"
+    if(value == False):
+        sck.send(msg)
+        print("msg sent")
 
-# set the LoRaWAN data rate
-sck.setsockopt(socket.SOL_LORA, socket.SO_DR, 5)
-
-# make the socket non-blocking
+# create a raw LoRa socket
+sck = socket.socket(socket.AF_LORA, socket.SOCK_RAW)
 sck.setblocking(False)
 
-#while True:
-    #movement = movement_detection()
-    #if movement:
-    #    save_data_json(day)
+while True:
+    #Check the light level, if it is too low then send a msg
+    lumens = sensor.light_level()
+    check_level_and_send(lumens)
 
-    #battery_level = battery()
-    #space_left = remaining_space()
-    #acceleration_result = acceleration()
-    #lumens = light_level()
+    #Check the battery level, if it is too low then send a msg
+    battery = sensor.battery_level()
+    check_level_and_send(battery)
+
+    #Checks the acceleration, if it is too low then send a msg
+    direction = acceleration()
+    check_level_and_send(direction)
+
+    #Checks the remaining space, if it is too low then send a msg
+    storage = sensor.storage_left()
+    check_level_and_send(storage)
+
+    time.sleep(5)
+
+    #movement = sensor.movement_detection()
+    #if movement:
+    #    sensor.save_data_json(day)
