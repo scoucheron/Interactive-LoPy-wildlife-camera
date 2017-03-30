@@ -10,7 +10,7 @@ class Sensors():
         return temp, hum
 
     ''' Measures how much battery is left '''
-    def battery(self):
+    def battery_level(self):
         battery_level = 100
         return battery_level
 
@@ -23,8 +23,8 @@ class Sensors():
     def acceleration(self):
         acceleration_result = 0
 
-        if acceleration_result > 3:
-            return True
+        if acceleration_result < 1:
+            return acceleration_result
         else:
             return False
 
@@ -41,12 +41,10 @@ class Sensors():
 
     ''' Detects motion through a PIR-sensor '''
     def movement_detection(self):
-        movement = 200
+        movement = False
 
-        if movement < 300:
-            return True
-        else:
-            return False
+        return False
+
 
     ''' Takes a picture and saves it on the SD-card '''
     def take_picture(self):
