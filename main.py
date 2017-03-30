@@ -16,6 +16,7 @@ The PIR-sensor tells the controller when there is movement, then does the rest
 '''
 def main():
     sensor = sensors.Sensors()
+    print("\n\n#################\n")
 
     # Every 24 hours, do a check on battery, light, acceleration
     # and how much storage is left
@@ -26,7 +27,7 @@ def main():
     #movement = sensor.movement_detection()
     #if movement:
     #    sensor.save_data_json(day)
-
+    print("\n\n#################\n")
 
 '''
 TODO (Should do when finished):
