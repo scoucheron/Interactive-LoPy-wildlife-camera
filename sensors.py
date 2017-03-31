@@ -1,5 +1,6 @@
 import machine
 import tsl2561
+import mpu6050
 import ujson
 
 class Sensors():
@@ -25,12 +26,20 @@ class Sensors():
 
     ''' Measures the acceleration (if there is one) '''
     def acceleration(self):
-        acceleration_result = 0
+        try:
+            mpu = mpu6050.MPU(self.i2c)
+            mpu.wake()
+            acceleration_result = mpu.pitch()
 
-        if acceleration_result < 1:
-            return acceleration_result
-        else:
-            return False
+            if acceleration_result < 120 and acceleration_result > 60:
+                return acceleration_result
+            else:
+                return False
+
+        except:
+            print("Acceleration sensor not connected")
+
+
 
     ''' Measures the light level in lumen '''
     def light_level(self):
