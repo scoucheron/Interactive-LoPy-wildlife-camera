@@ -1,6 +1,7 @@
 import machine
 import tsl2561
 import ujson
+import os
 
 class Sensors():
     def __init__(self):
@@ -9,12 +10,13 @@ class Sensors():
 
     ''' Measures the temperature and humidity '''
     def temperature_and_humidity(self):
-        temp = 12
-        hum = 20
+        temp = machine.rng()
+        hum = machine.rng()
         return temp, hum
 
     ''' Measures how much battery is left '''
     def battery_level(self):
+
         battery_level = 100
         return battery_level
 
@@ -34,13 +36,17 @@ class Sensors():
 
     ''' Measures the light level in lumen '''
     def light_level(self):
-        sensor = tsl2561.TSL2561(self.i2c)
-        lumen = sensor.read()
+        try:
+            sensor = tsl2561.TSL2561(self.i2c)
+            lumen = sensor.read()
+            if lumen < 0.75:
+                return False
+            else:
+                return lumen
 
-        if lumen < 0.75:
-            return False
-        else:
-            return lumen
+        except:
+            print("Light sensor not connected")
+
 
     ''' Detects motion through a PIR-sensor '''
     def movement_detection(self):
@@ -56,12 +62,13 @@ class Sensors():
 
     ''' Calls on all the sensors and saves the data in JSON on the SD-card '''
     def save_data_json(self,day):
-        temp_hum = temperature_and_humidity()
-        pic = take_picture()
+        temp_hum = self.temperature_and_humidity()
+        pic = self.take_picture()
 
         day['date'] = ({ 'temp': temp_hum[0],
                          'hum': temp_hum[1],
                          'pic': pic })
 
         with open ('data.txt', 'a') as outfile:
-            ujson.dumps(day, outfile, indent=2)
+            outfile.write(ujson.dumps(day))
+            outfile.write("\n")

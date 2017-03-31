@@ -15,19 +15,25 @@ The PIR-sensor tells the controller when there is movement, then does the rest
         -> Save as json and jpeg on SD-card
 '''
 def main():
+    #Initialize the time
+    #rtc = machine.RTC()
+    #rtc.init((2014, 5, 1, 4, 13, 0, 0, 0))
+
     sensor = sensors.Sensors()
+    day = {}
+    day['date'] = []
     print("\n\n#################\n")
 
-    # Every 24 hours, do a check on battery, light, acceleration
-    # and how much storage is left
+    # Every 24 hours, do a check on battery, light, acceleration and how much storage is left
     time = True
     if(time):
         check_status(sensor)
 
     #movement = sensor.movement_detection()
     #if movement:
-    #    sensor.save_data_json(day)
-    print("\n\n#################\n")
+    #sensor.save_data_json(day)
+    #sensor.save_data_json(day)
+    print("\n#################\n")
 
 '''
 TODO (Should do when finished):
@@ -107,7 +113,7 @@ def check_level_and_send(value, sck, mesg):
     msg = "Something is wrong. Check the camera"
     if(value == False):
         #sck.send(msg)
-        print("msg sent")
+        print("---- MESSAGE SENT")
 
 if __name__ == '__main__':
     main()
