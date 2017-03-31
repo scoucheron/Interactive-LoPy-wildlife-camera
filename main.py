@@ -16,6 +16,7 @@ The PIR-sensor tells the controller when there is movement, then does the rest
 '''
 def main():
     sensor = sensors.Sensors()
+    print("\n\n#################\n")
 
     # Every 24 hours, do a check on battery, light, acceleration
     # and how much storage is left
@@ -26,7 +27,7 @@ def main():
     #movement = sensor.movement_detection()
     #if movement:
     #    sensor.save_data_json(day)
-
+    print("\n\n#################\n")
 
 '''
 TODO (Should do when finished):
@@ -46,7 +47,7 @@ These checks should be done once a day
 
 '''
 def check_status(sensor):
-    sck = connect_to_lora()
+    sck = 1 #connect_to_lora()
 
     #Check the light level, if it is too low then send a msg
     lumens = sensor.light_level()
@@ -61,7 +62,7 @@ def check_status(sensor):
     check_level_and_send(accel, sck, "Direction (acceleration) check")
 
     #Checks the remaining space, if it is too low then send a msg
-    storage = sensor.storage_left()
+    storage = sensor.remaining_space()
     check_level_and_send(storage, sck, "Storage check")
 
 '''
@@ -99,15 +100,13 @@ def connect_to_lora():
     # create a raw LoRa socket
     sck = socket.socket(socket.AF_LORA, socket.SOCK_RAW)
     sck.setblocking(False)
-
     return sck
 
-
-def check_level_and_send(value, mesg, sck):
+def check_level_and_send(value, sck, mesg):
     print(mesg)
     msg = "Something is wrong. Check the camera"
     if(value == False):
-        sck.send(msg)
+        #sck.send(msg)
         print("msg sent")
 
 if __name__ == '__main__':

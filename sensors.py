@@ -3,6 +3,10 @@ import tsl2561
 import ujson
 
 class Sensors():
+    def __init__(self):
+        self.i2c = machine.I2C(0, machine.I2C.MASTER, baudrate=50000)
+
+
     ''' Measures the temperature and humidity '''
     def temperature_and_humidity(self):
         temp = 12
@@ -30,8 +34,7 @@ class Sensors():
 
     ''' Measures the light level in lumen '''
     def light_level(self):
-        i2c = machine.I2C(0, machine.I2C.MASTER, baudrate=10000)
-        sensor = tsl2561.TSL2561(i2c)
+        sensor = tsl2561.TSL2561(self.i2c)
         lumen = sensor.read()
 
         if lumen < 0.75:
