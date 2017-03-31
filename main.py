@@ -21,7 +21,7 @@ def main():
     # and how much storage is left
     time = True
     if(time):
-        check_status(sensor):
+        check_status(sensor)
 
     #movement = sensor.movement_detection()
     #if movement:
