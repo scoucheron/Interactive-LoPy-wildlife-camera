@@ -20,6 +20,7 @@ def main():
     #rtc.init((2014, 5, 1, 4, 13, 0, 0, 0))
 
     sensor = sensors.Sensors()
+
     day = {}
     day['date'] = []
     print("\n\n#################\n")
@@ -54,6 +55,8 @@ These checks should be done once a day
 '''
 def check_status(sensor):
     sck = 1 #connect_to_lora()
+
+    #Check the position of the camera
 
     #Check the light level, if it is too low then send a msg
     lumens = sensor.light_level()
@@ -110,6 +113,7 @@ def connect_to_lora():
 
 def check_level_and_send(value, sck, mesg):
     print(mesg)
+    print(value)
     msg = "Something is wrong. Check the camera"
     if(value == False):
         #sck.send(msg)

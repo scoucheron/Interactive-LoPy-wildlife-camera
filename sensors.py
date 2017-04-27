@@ -3,11 +3,14 @@ import tsl2561
 import mpu6050
 import ujson
 import os
+import time
+
+pir_triggered=0
+
 
 class Sensors():
     def __init__(self):
         self.i2c = machine.I2C(0, machine.I2C.MASTER, baudrate=50000)
-
 
     ''' Measures the temperature and humidity '''
     def temperature_and_humidity(self):
@@ -17,9 +20,28 @@ class Sensors():
 
     ''' Measures how much battery is left '''
     def battery_level(self):
+        numADCreadings = const(20)
+        adc = machine.ADC(0)
+        adcread = adc.channel(attn=1, pin='P16')
+        samplesADC = [0.0]*numADCreadings; meanADC = 0.0
+        i = 0
+        while (i < numADCreadings):
+            adcint = adcread()
+            samplesADC[i] = adcint
+            meanADC += adcint
+            i += 1
+        meanADC /= numADCreadings
+        varianceADC = 0.0
+        for adcint in samplesADC:
+            varianceADC += (adcint - meanADC)**2
+        varianceADC /= (numADCreadings - 1)
+        battery_percent = ((meanADC*1400/4096)/1400)*100
+        battery_percent = round(battery_percent, 2)
 
-        battery_level = 100
-        return battery_level
+        if battery_percent < 20:
+            return False
+        else:
+            return battery_percent
 
     ''' Measures the remaining space '''
     def remaining_space(self):
@@ -42,7 +64,6 @@ class Sensors():
             print("Acceleration sensor not connected")
 
 
-
     ''' Measures the light level in lumen '''
     def light_level(self):
         try:
@@ -59,10 +80,15 @@ class Sensors():
 
     ''' Detects motion through a PIR-sensor '''
     def movement_detection(self):
-        movement = False
+        pir = Pin('GP4',mode=Pin.IN,pull=Pin.PULL_UP)
+        pir.callback(Pin.IRQ_RISING, pirTriggered)
 
         return False
 
+    def pirTriggered(pin):
+        print("Pir triggered")
+        global pir_triggered
+        pir_triggered = 1
 
     ''' Takes a picture and saves it on the SD-card '''
     def take_picture(self):
