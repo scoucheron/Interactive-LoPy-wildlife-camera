@@ -33,7 +33,6 @@ def main():
     #movement = sensor.movement_detection()
     #if movement:
     #sensor.save_data_json(day)
-    #sensor.save_data_json(day)
     print("\n#################\n")
 
 '''
@@ -67,12 +66,13 @@ def check_status(sensor):
     check_level_and_send(battery, sck, "Battery check")
 
     #Checks the acceleration, if it is too low then send a msg
-    accel = sensor.acceleration()
-    check_level_and_send(accel, sck, "Direction (acceleration) check")
+    #accel = sensor.acceleration()
+    #check_level_and_send(accel, sck, "Direction (acceleration) check")
 
     #Checks the remaining space, if it is too low then send a msg
     storage = sensor.remaining_space()
     check_level_and_send(storage, sck, "Storage check")
+
 
 '''
 Connects to the LoRaWAN.

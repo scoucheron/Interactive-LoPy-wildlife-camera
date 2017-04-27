@@ -1,12 +1,11 @@
 import machine
 import tsl2561
 import mpu6050
+import battery
 import ujson
+import bme280
 import os
 import time
-
-pir_triggered=0
-
 
 class Sensors():
     def __init__(self):
@@ -14,28 +13,17 @@ class Sensors():
 
     ''' Measures the temperature and humidity '''
     def temperature_and_humidity(self):
-        temp = machine.rng()
-        hum = machine.rng()
-        return temp, hum
+        try:
+            weather = bme280.BME280(i2c=self.i2c)
+            data = weather.values
+            return data[0], data[2]
+        except:
+            print("The temperature and humidity sensor is not connected")
+            return False, False
 
     ''' Measures how much battery is left '''
     def battery_level(self):
-        numADCreadings = const(20)
-        adc = machine.ADC(0)
-        adcread = adc.channel(attn=1, pin='P16')
-        samplesADC = [0.0]*numADCreadings; meanADC = 0.0
-        i = 0
-        while (i < numADCreadings):
-            adcint = adcread()
-            samplesADC[i] = adcint
-            meanADC += adcint
-            i += 1
-        meanADC /= numADCreadings
-        varianceADC = 0.0
-        for adcint in samplesADC:
-            varianceADC += (adcint - meanADC)**2
-        varianceADC /= (numADCreadings - 1)
-        battery_percent = ((meanADC*1400/4096)/1400)*100
+        battery_percent = battery.measure()
         battery_percent = round(battery_percent, 2)
 
         if battery_percent < 20:
