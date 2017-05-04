@@ -59,8 +59,7 @@ class MPU():
         try:
             self.write(self.mpu_addr, 0x6B, bytes(0x01))
         except:
-            print(MPU.I2Cerror)
-            print("devise is still asleep")
+            pass
         return 'awake'
 
 
@@ -71,8 +70,7 @@ class MPU():
         try:
             self.write(self.mpu_addr, 0x6B, chr(0x40))
         except:
-            print(MPU.I2Cerror)
-            print("devise is still awake")
+            pass
 
     # sample rate
     def sample_rate(self, rate=None):

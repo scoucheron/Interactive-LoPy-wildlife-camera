@@ -55,8 +55,6 @@ These checks should be done once a day
 def check_status(sensor):
     sck = 1 #connect_to_lora()
 
-    #Check the position of the camera
-
     #Check the light level, if it is too low then send a msg
     lumens = sensor.light_level()
     check_level_and_send(lumens, sck, "Light check")
@@ -66,8 +64,8 @@ def check_status(sensor):
     check_level_and_send(battery, sck, "Battery check")
 
     #Checks the acceleration, if it is too low then send a msg
-    #accel = sensor.acceleration()
-    #check_level_and_send(accel, sck, "Direction (acceleration) check")
+    accel = sensor.acceleration()
+    check_level_and_send(accel, sck, "Direction (acceleration) check")
 
     #Checks the remaining space, if it is too low then send a msg
     storage = sensor.remaining_space()

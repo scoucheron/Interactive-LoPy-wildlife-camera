@@ -33,6 +33,7 @@ class Sensors():
 
     ''' Measures the remaining space '''
     def remaining_space(self):
+
         storage_left = 100
         return storage_left
 
@@ -47,10 +48,8 @@ class Sensors():
                 return acceleration_result
             else:
                 return False
-
         except:
             print("Acceleration sensor not connected")
-
 
     ''' Measures the light level in lumen '''
     def light_level(self):
@@ -61,16 +60,13 @@ class Sensors():
                 return False
             else:
                 return lumen
-
         except:
             print("Light sensor not connected")
-
 
     ''' Detects motion through a PIR-sensor '''
     def movement_detection(self):
         pir = Pin('GP4',mode=Pin.IN,pull=Pin.PULL_UP)
         pir.callback(Pin.IRQ_RISING, pirTriggered)
-
         return False
 
     def pirTriggered(pin):
