@@ -1,0 +1,65 @@
+<html>
+ <head>
+   <script src="code.jquery.com/jquery-1.12.0.min.js"></script>
+   <script src="sdk.amazonaws.com/js/aws-sdk-2.2.29.min.js"></script>
+ </head>
+  <body>
+     <h3>Cloud Connect Javascript example</h3>
+     <pre id="output">Please wait...</pre>
+     <script>
+       AWS.config.region = "eu-west-1";
+       /* CONFIGURATION SECTION */
+       var appUrl = "startiot.cc.telenorconnexion.com"; // for example
+       var userName = "coucheron"; // your username
+       var password = "lOlkUk101"; // your password
+       /* END OF CONFIGURATION SECTION */
+       var loginPayload = {
+         action: 'LOGIN',
+         attributes: {
+           userName: userName,
+           password: password
+         }
+       };
+       callLambda(mf.AuthLambda, loginPayload, function(res) {
+       var creds = res.credentials;
+       AWS.config.credentials.params.Logins = {['cognito-idp.' + mf.Region + '.amazonaws.com/' + mf.UserPool]: creds.token};
+       AWS.config.credentials.expired = true;
+
+       var findThingsPayload = {
+         action: 'FIND',
+         query: {
+           size: 3,
+           query: {
+             match_all: {}
+           }
+         }
+       };
+       callLambda(mf.ThingLambda, findThingsPayload, function(res) {$("#output").html(JSON.stringify(res.hits.hits, null, 2));});});});
+
+       function manifestUrl(hostname) {
+         return '1u31fuekv5.execute-api.eu-west-1.amazonaws.com' +
+         '/prod/manifest/?hostname=' + hostname;
+       }
+
+       function callLambda(name, payload, callback) {
+         var params = {
+           FunctionName: name,
+           Payload: JSON.stringify(payload)
+         };
+         var lambda = new AWS.Lambda();
+         lambda.invoke(params, function(err, res) {
+         if (!err) {
+           var pl = JSON.parse(res.Payload);
+         if (!pl.errorMessage) {
+           callback(pl);
+         } else {
+           alert("Lambda function returned an error: " + pl.errorMessage);
+         }
+         } else {
+           alert("Lambda request failed" + err.toString());
+         }
+         });
+       };
+     </script>
+  </body>
+</html>

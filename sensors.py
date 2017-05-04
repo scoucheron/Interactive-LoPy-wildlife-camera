@@ -25,11 +25,7 @@ class Sensors():
     def battery_level(self):
         battery_percent = battery.measure()
         battery_percent = round(battery_percent, 2)
-
-        if battery_percent < 20:
-            return False
-        else:
-            return battery_percent
+        return battery_percent
 
     ''' Measures the remaining space '''
     def remaining_space(self):
@@ -43,25 +39,21 @@ class Sensors():
             mpu = mpu6050.MPU(self.i2c)
             mpu.wake()
             acceleration_result = mpu.pitch()
+            return acceleration_result
 
-            if acceleration_result < 120 and acceleration_result > 60:
-                return acceleration_result
-            else:
-                return False
         except:
             print("Acceleration sensor not connected")
+            return "Not connected"
 
     ''' Measures the light level in lumen '''
     def light_level(self):
         try:
             sensor = tsl2561.TSL2561(self.i2c)
             lumen = sensor.read()
-            if lumen < 0.75:
-                return False
-            else:
-                return lumen
+            return lumen
         except:
             print("Light sensor not connected")
+            return "Not connected"
 
     ''' Detects motion through a PIR-sensor '''
     def movement_detection(self):

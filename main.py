@@ -53,23 +53,21 @@ These checks should be done once a day
 
 '''
 def check_status(sensor):
-    sck = 1 #connect_to_lora()
+    sck = connect_to_lora()
 
     #Check the light level, if it is too low then send a msg
     lumens = sensor.light_level()
-    check_level_and_send(lumens, sck, "Light check")
 
     #Check the battery level, if it is too low then send a msg
     battery = sensor.battery_level()
-    check_level_and_send(battery, sck, "Battery check")
 
     #Checks the acceleration, if it is too low then send a msg
     accel = sensor.acceleration()
-    check_level_and_send(accel, sck, "Direction (acceleration) check")
 
     #Checks the remaining space, if it is too low then send a msg
     storage = sensor.remaining_space()
-    check_level_and_send(storage, sck, "Storage check")
+
+    check_level_and_send(lumens, battery, accel, storage, sck)
 
 
 '''
@@ -109,13 +107,18 @@ def connect_to_lora():
     sck.setblocking(False)
     return sck
 
-def check_level_and_send(value, sck, mesg):
-    print(mesg)
-    print(value)
-    msg = "Something is wrong. Check the camera"
-    if(value == False):
-        #sck.send(msg)
-        print("---- MESSAGE SENT")
+def check_level_and_send(lumens, battery, accel, storage, sck):
+    payload = [lumens, battery, accel, storage]
+
+    timeout = time.time() + 60*3   # 3 minutes from now
+    while True:
+        maxtime = 0
+        sck.send(' - '.join(str(x) for x in payload))
+        print("Sent data")
+        time.sleep(5)
+        if maxtime == 3 or time.time() > timeout:
+            break
+        maxtime = maxtime - 1
 
 if __name__ == '__main__':
     main()
