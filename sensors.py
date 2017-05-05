@@ -6,6 +6,7 @@ import ujson
 import bme280
 import os
 import time
+from LSY201 import JPEGCamera
 
 class Sensors():
     def __init__(self):
@@ -68,8 +69,13 @@ class Sensors():
 
     ''' Takes a picture and saves it on the SD-card '''
     def take_picture(self):
-        picture = "0014192.jpg"
-        return picture
+        try:
+            camera = JPEGCamera()
+            picture = camera.simpleTakePhoto('image.jpg')
+        except:
+            print("Camera is not connected")
+            return "Not connected"
+
 
     ''' Calls on all the sensors and saves the data in JSON on the SD-card '''
     def save_data_json(self,day):

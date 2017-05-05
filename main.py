@@ -18,43 +18,30 @@ def main():
     #Initialize the time
     #rtc = machine.RTC()
     #rtc.init((2014, 5, 1, 4, 13, 0, 0, 0))
-
+    sck = connect_to_lora()
     sensor = sensors.Sensors()
 
     day = {}
     day['date'] = []
-    print("\n\n#################\n")
 
     # Every 24 hours, do a check on battery, light, acceleration and how much storage is left
-    time = True
-    if(time):
-        check_status(sensor)
+    while(True):
+        check_status(sensor, sck)
+        time.sleep(60)
+
+    #sensor.take_picture()
 
     #movement = sensor.movement_detection()
     #if movement:
-    #sensor.save_data_json(day)
-    print("\n#################\n")
+        #sensor.save_data_json(day)
 
 '''
-TODO (Should do when finished):
-These checks should be done once a day
-
-- Check battery_level
-    * If there is less than 10%, send warning to user
-
-- Check space left on SD card
-    * If there is less than 10%, send WARNING to user
-
-- Check if the acceleration or the direction the camera is off
-    * If the acceleration is too hight, or the wrong direction, send WARNING
-
-- Check the light level
-    * If the light level is to low, send WARNING to user
+    Checks the status of the light level, battery,
+    direction of the camera and how much storage is
+    left and passes it on so it can be sent
 
 '''
-def check_status(sensor):
-    sck = connect_to_lora()
-
+def check_status(sensor, sck):
     #Check the light level, if it is too low then send a msg
     lumens = sensor.light_level()
 
@@ -67,7 +54,9 @@ def check_status(sensor):
     #Checks the remaining space, if it is too low then send a msg
     storage = sensor.remaining_space()
 
-    check_level_and_send(lumens, battery, accel, storage, sck)
+    data_array = [lumens, battery, accel, storage]
+
+    send_data(data_array, sck)
 
 
 '''
@@ -107,18 +96,16 @@ def connect_to_lora():
     sck.setblocking(False)
     return sck
 
-def check_level_and_send(lumens, battery, accel, storage, sck):
-    payload = [lumens, battery, accel, storage]
-
-    timeout = time.time() + 60*3   # 3 minutes from now
-    while True:
-        maxtime = 0
-        sck.send(' - '.join(str(x) for x in payload))
-        print("Sent data")
-        time.sleep(5)
-        if maxtime == 3 or time.time() > timeout:
-            break
-        maxtime = maxtime - 1
+def send_data(data_array, sck):
+    #timeout = time.time() + 60*3   # 3 minutes from now
+    #while True:
+    #   maxtime = 0
+    sck.send(' '.join(str(x) for x in data_array))
+    #print("Sent data")
+    #time.sleep(5)
+    #if maxtime == 3 or time.time() > timeout:
+    #        break
+    #   maxtime = maxtime - 1
 
 if __name__ == '__main__':
     main()
