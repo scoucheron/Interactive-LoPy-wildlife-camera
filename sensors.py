@@ -86,6 +86,6 @@ class Sensors():
                          'hum': temp_hum[1],
                          'pic': pic })
 
-        with open ('data.txt', 'a') as outfile:
+        with open ('/sd/data.txt', 'a') as outfile:
             outfile.write(ujson.dumps(day))
             outfile.write("\n")

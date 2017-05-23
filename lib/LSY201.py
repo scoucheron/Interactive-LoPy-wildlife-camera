@@ -1,85 +1,108 @@
-from machine import UART
-import struct
-import time
+import machine
 
-#Commands for the LinkSprite Serial JPEG Camera
-GET_SIZE = struct.pack("BBBBB",0x56, 0x00, 0x34, 0x01, 0x00)
-QUICK_SERIAL = struct.pack("BBBBBBB", 0x56 ,0x00 ,0x24 ,0x03 ,0x01 ,0x0D ,0xA6)
-RESET_CAMERA = struct.pack("BBBB",0x56, 0x00, 0x26, 0x00)
-TAKE_PICTURE = struct.pack("BBBBB",0x56, 0x00, 0x36, 0x01, 0x00)
-STOP_TAKING_PICS = struct.pack("BBBBB",0x56, 0x00, 0x36, 0x01, 0x03)
+TX_RESET = [0x56, 0x00, 0x26, 0x00]
+RX_RESET = [ 0x76, 0x00, 0x26, 0x00 ]
 
-baudRates = {
-    9600: struct.pack("BBBBBBB", 0x56 ,0x00 ,0x24 ,0x03 ,0x01 ,0xAE ,0xC8),
-    19200: struct.pack("BBBBBBB", 0x56 ,0x00 ,0x24 ,0x03 ,0x01 ,0x56 ,0xE4),
-    38400: struct.pack("BBBBBBB", 0x56 ,0x00 ,0x24 ,0x03 ,0x01 ,0x2A ,0xF2),
-    57600: struct.pack("BBBBBBB", 0x56 ,0x00 ,0x24 ,0x03 ,0x01 ,0x1C ,0x4C),
-    115200: struct.pack("BBBBBBB", 0x56 ,0x00 ,0x24 ,0x03 ,0x01 ,0x0D ,0xA6)
-}
+TX_TAKE_PICTURE = [ 0x56, 0x00, 0x36, 0x01, 0x00 ]
+RX_TAKE_PICTURE = [ 0x76, 0x00, 0x36, 0x00, 0x00 ]
 
-resolutions = {
-    "640x480": struct.pack("BBBBB",0X56 ,0X00 ,0X54 ,0X01 ,0X00),
-    "320x240": struct.pack("BBBBB",0X56 ,0X00 ,0X54 ,0X01 ,0X11),
-    "160x120": struct.pack("BBBBB",0X56 ,0X00 ,0X54 ,0X01 ,0X22)
-}
+TX_READ_JPEG_FILE_SIZE = [ 0x56, 0x00, 0x34, 0x01, 0x00 ]
+RX_READ_JPEG_FILE_SIZE = [ 0x76, 0x00, 0x34, 0x00, 0x04, 0x00, 0x00 ]
 
-class JPEGCamera():
+TX_READ_JPEG_FILE_CONTENT = [ 0x56, 0x00, 0x32, 0x0C, 0x00, 0x0A, 0x00, 0x00 ]
+RX_READ_JPEG_FILE_CONTENT = [ 0x76, 0x00, 0x32, 0x00, 0x00 ]
+
+TX_STOP_TAKING_PICTURES = [ 0x56, 0x00, 0x36, 0x01, 0x03 ]
+RX_STOP_TAKING_PICTURES = [ 0x76, 0x00, 0x36, 0x00, 0x00 ]
+
+TX_SET_COMPRESSION_RATIO = [ 0x56, 0x00, 0x31, 0x05, 0x01, 0x01, 0x12, 0x04 ]
+RX_SET_COMPRESSION_RATIO = [ 0x76, 0x00, 0x31, 0x00, 0x00 ]
+
+TX_SET_IMAGE_SIZE = [ 0x56, 0x00, 0x31, 0x05, 0x04, 0x01, 0x00, 0x19 ]
+RX_SET_IMAGE_SIZE = [ 0x76, 0x00, 0x31, 0x00, 0x00 ]
+
+TX_ENTER_POWER_SAVING = [ 0x56, 0x00, 0x3E, 0x03, 0x00, 0x01, 0x01 ]
+RX_ENTER_POWER_SAVING = [ 0x76, 0x00, 0x3E, 0x00, 0x00 ]
+
+TX_EXIT_POWER_SAVING = [ 0x56, 0x00, 0x3E, 0x03, 0x00, 0x01, 0x00 ]
+RX_EXIT_POWER_SAVING = [ 0x76, 0x00, 0x3E, 0x00, 0x00 ]
+
+TX_CHANGE_BAUD_RATE = [ 0x56, 0x00, 0x24, 0x03, 0x01 ]
+RX_CHANGE_BAUD_RATE = [ 0x76, 0x00, 0x24, 0x00, 0x00 ]
+
+class LSY201():
     def __init__(self, baudRate = 38400):
-      self.baudRate = baudRate
-      self.ser = UART(1, baudRate)
+        self.eof = False
+        self.ser = UART(1, baudRate)
+        self.ser.init(9600, bits=8, parity=None, stop=1)
 
-    def setBaudRate(self, baudRate):
-      if baudRate in baudRates:
-        self.baudRate = baudRate
-        self.ser.write(baudRates[baudRate])
-        self.ser.read(5)
-        self.ser = UART(1, self.baudRate)
-      else:
-        raise Exception('Value ' + baudRate + ' is not a valid baudrate')
+    def reset():
+        self.ser.write(TX_RESET)
+        self.ser.read(RX_RESET)
 
-    def setResolution(self, resolution):
-      if resolution in resolutions:
-        self.ser.write(resolutions[resolution])
-      else:
-        raise Exception('Value ' + resolution + ' is not a valid resolution')
+    def takePicture():
+        self.eof = False
+        self.ser.write(TX_TAKE_PICTURE)
+        self.ser.read(RX_TAKE_PICTURE)
 
-    def resetCamera(self):
-      self.ser.write(RESET_CAMERA)
-      self.ser.read(4)
+    def readJpegFileSize():
+        self.ser.write(TX_READ_JPEG_FILE_SIZE)
+        self.ser.read(RX_READ_JPEG_FILE_SIZE)
+        return ((readByte()) << 8) | readByte()
 
-      #Wait until the camera is ready
-      time.sleep(2)
-      #Reconnect using the default baudrate
-      self.ser = UART(1, 38400)
+    def readJpegFileContent(offset, buf, size):
+          last = 0x00
 
-    def getSize(self):
-      data = self._getSize()
-      size = data[7] * 256 + data[8]
-      return size
+          if(self.eof):
+            return False
 
-    def _getSize(self):
-      self.ser.write(GET_SIZE)
-      data = struct.unpack("BBBBBBBBB", self.ser.readall(9))
-      return data
+          self.ser.write(TX_READ_JPEG_FILE_CONTENT)
 
-    def takePicture(self):
-      self.ser.write(TAKE_PICTURE)
-      self.ser.read(5)
+          params = [ (offset & 0xFF00) >> 8, (offset & 0x00FF), 0x00, 0x00, (size & 0xFF00) >> 8, (size & 0x00FF), 0x00, 0x0A]
 
-    def savePicture(self, filename):
-      dataSize = self._getSize()
-      self.ser.write(struct.pack("BBBBBBBBBBBBBBBB",0x56 ,0x00 ,0x32 ,0x0C ,0x00 ,0x0A ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,dataSize[7] ,dataSize[8] ,0x00 ,0x0A))
-      self.ser.read(5)
-      f = open(filename, 'wb')
-      image = self.ser.read(dataSize[7] * 256 + dataSize[8])
-      f.write(image)
-      f.close()
+          self.ser.write(params, len(params))
+          self.ser.read(RX_READ_JPEG_FILE_CONTENT)
 
-    def stopTakingPictures(self):
-      self.ser.write(STOP_TAKING_PICS)
-      self.ser.read(5)
+          while (size --):
+            buf++ = readByte()
 
-    def simpleTakePhoto(self, filename):
-      self.takePicture()
-      self.savePicture(filename)
-      self.stopTakingPictures()
+            if (last == 0xFF && buf[-1] == 0xD9):
+              self.eof = True
+
+            last = buf[-1]
+
+          self.ser.read(RX_READ_JPEG_FILE_CONTENT)
+          return True
+
+
+    def setCompressionRatio(value):
+        self.ser.write(TX_SET_COMPRESSION_RATIO)
+        self.ser.write(value)
+        self.ser.read(RX_SET_COMPRESSION_RATIO)
+
+    def setImageSize(size):
+        self.ser.write(TX_SET_IMAGE_SIZE)
+        self.ser.write(size)
+        self.ser.read(RX_SET_IMAGE_SIZE)
+
+    def setBaudRate(baud):
+        self.ser.write(TX_CHANGE_BAUD_RATE)
+        params = 0xC8AE # 9600
+
+        if baud = 19200:
+            params = 0xE456
+        elif baud = 19200:
+            params = 0xE456
+        elif baud = 38400:
+            params = 0xF22A
+        elif baud = 57600:
+            params = 0x4C1C
+        elif baud = 115200:
+            params = 0xA60D
+
+        self.ser.write(params)
+        self.ser.read(RX_CHANGE_BAUD_RATE)
+
+    def stopTakingPictures():
+        self.ser.write(TX_STOP_TAKING_PICTURES)
+        self.ser.read(RX_STOP_TAKING_PICTURES)
