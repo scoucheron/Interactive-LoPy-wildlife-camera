@@ -7,6 +7,8 @@ uart = UART(0, 115200)
 os.dupterm(uart)
 
 #Initialize sd-card
+print("********* Initializing the SD-card *********")
 sd = SD()
-time.sleep(1)
+time.sleep(3)
 os.mount(sd, '/sd')
+print("********* SD-card is initialized *********")

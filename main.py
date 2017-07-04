@@ -18,27 +18,26 @@ def main():
     #Initialize the time
     #rtc = machine.RTC()
     #rtc.init((2014, 5, 1, 4, 13, 0, 0, 0))
-    #sck = connect_to_lora()
+    sck = connect_to_lora()
     sensor = sensors.Sensors()
 
     day = {}
+    day['date'] = []
 
     # Every 24 hours, do a check on battery, light, acceleration and how much storage is left
     #while(True):
-    #   check_status(sensor, sck)
-    #    time.sleep(60)
+        #check_status(sensor, sck)
+        #time.sleep(30)
 
     #sensor.take_picture()
-
     #movement = sensor.movement_detection()
     #if movement:
-    sensor.save_data_json(day)
+        #sensor.save_data_json(day)
 
 '''
     Checks the status of the light level, battery,
     direction of the camera and how much storage is
     left and passes it on so it can be sent
-
 '''
 def check_status(sensor, sck):
     #Check the light level, if it is too low then send a msg
@@ -53,10 +52,10 @@ def check_status(sensor, sck):
     #Checks the remaining space, if it is too low then send a msg
     storage = sensor.remaining_space()
 
-    #Create an array contatining all wanted values
-    data_array = [lumens, battery, accel, storage]
+    data_array = [lumens, battery, accel[0], accel[1], storage]
 
     send_data(data_array, sck)
+
 
 '''
 Connects to the LoRaWAN.
@@ -95,17 +94,17 @@ def connect_to_lora():
     sck.setblocking(False)
     return sck
 
-'''
-Sends data over the LoRaWAN
-'''
 def send_data(data_array, sck):
+    #timeout = time.time() + 60*3   # 3 minutes from now
+    #while True:
+    #   maxtime = 0
 
-    #Incase we are disconnected from the lora network for some weird reason
-    if not lora.has_joined():
-        sck = connect_to_lora()
+    sck.send('@'.join(str(x) for x in data_array))
 
-    sck.send(' '.join(str(x) for x in data_array))
-
+    #time.sleep(5)
+    #if maxtime == 3 or time.time() > timeout:
+    #        break
+    #   maxtime = maxtime - 1
 
 if __name__ == '__main__':
     main()

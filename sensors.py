@@ -11,6 +11,7 @@ from LSY201 import JPEGCamera
 class Sensors():
     def __init__(self):
         self.i2c = machine.I2C(0, machine.I2C.MASTER, baudrate=50000)
+        self.storage_left = 100
 
     ''' Measures the temperature and humidity '''
     def temperature_and_humidity(self):
@@ -30,21 +31,24 @@ class Sensors():
 
     ''' Measures the remaining space '''
     def remaining_space(self):
-
-        storage_left = 100
-        return storage_left
+        self.storage_left = self.storage_left -1
+        return self.storage_left
 
     ''' Measures the acceleration (if there is one) '''
     def acceleration(self):
         try:
             mpu = mpu6050.MPU(self.i2c)
             mpu.wake()
-            acceleration_result = mpu.pitch()
-            return acceleration_result
+            acceleration_resultY = mpu.pitchY()
+            print (acceleration_resultY)
+            acceleration_resultX = mpu.pitchX()
+            print (acceleration_resultX)
+            return acceleration_resultX, acceleration_resultY
 
         except:
             print("Acceleration sensor not connected")
             return "Not connected"
+
 
     ''' Measures the light level in lumen '''
     def light_level(self):
@@ -86,6 +90,6 @@ class Sensors():
                          'hum': temp_hum[1],
                          'pic': pic })
 
-        with open ('/sd/data.txt', 'a') as outfile:
+        with open ('data.txt', 'a') as outfile:
             outfile.write(ujson.dumps(day))
             outfile.write("\n")
