@@ -61,15 +61,25 @@ class Sensors():
             return "Not connected"
 
     ''' Detects motion through a PIR-sensor '''
-    def movement_detection(self):
-        pir = Pin('GP4',mode=Pin.IN,pull=Pin.PULL_UP)
-        pir.callback(Pin.IRQ_RISING, pirTriggered)
-        return False
+    def movement_detection(self, sensor, day):
+        curr_val = 0
+        num_detections=0
+        pir = machine.Pin('G4',mode=machine.Pin.IN,pull=machine.Pin.PULL_UP)
+        print("Waiting for pir-sensor to initialize (60 sec)...")
+        # time.sleep(60)
+        while True:
+            tmp = curr_val
+            curr_val = pir.value()
+            if curr_val != 0:
+                if curr_val != tmp:
+                    num_detections +=1
+                    print ("Movement detected!" + "\t" + "Total number of detections: " +  str(num_detections))
+                    # sensor.take_picture()
+                    # sensor.save_data_json(day)
+            else:
+                if curr_val != tmp:
+                    print ("No movement" + "\t" + "Total number of detections: " + str(num_detections) )
 
-    def pirTriggered(pin):
-        print("Pir triggered")
-        global pir_triggered
-        pir_triggered = 1
 
     ''' Takes a picture and saves it on the SD-card '''
     def take_picture(self):
