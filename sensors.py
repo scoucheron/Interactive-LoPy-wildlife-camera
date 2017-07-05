@@ -1,3 +1,10 @@
+'''
+ Sverre Coucheron (sverre.coucheron@gmail.com),
+ Martin Stensen (martin.stensen92@gmail.com) and
+ Vebjørn Haugland (vha044@post.uit.no)
+
+ Developed spring 2017 for INF-3910-2
+'''
 import machine
 import tsl2561
 import mpu6050
@@ -6,7 +13,7 @@ import ujson
 import bme280
 import os
 import time
-from LSY201 import JPEGCamera
+from LSY201 import LSY
 
 class Sensors():
     def __init__(self):
@@ -49,7 +56,6 @@ class Sensors():
             print("Acceleration sensor not connected")
             return "Not connected"
 
-
     ''' Measures the light level in lumen '''
     def light_level(self):
         try:
@@ -90,6 +96,6 @@ class Sensors():
                          'hum': temp_hum[1],
                          'pic': pic })
 
-        with open ('data.txt', 'a') as outfile:
+        with open ('/sd/data.txt', 'a') as outfile:
             outfile.write(ujson.dumps(day))
             outfile.write("\n")

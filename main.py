@@ -1,3 +1,10 @@
+'''
+ Sverre Coucheron (sverre.coucheron@gmail.com)
+ Martin Stensen (martin.stensen92@gmail.com)
+ Vebjørn Haugland (vha044@post.uit.no)
+
+ Developed spring 2017 for INF-3910-2
+'''
 from network import LoRa
 import machine
 import socket
@@ -18,7 +25,7 @@ def main():
     #Initialize the time
     #rtc = machine.RTC()
     #rtc.init((2014, 5, 1, 4, 13, 0, 0, 0))
-    sck = connect_to_lora()
+    sck = 0 #connect_to_lora()
     sensor = sensors.Sensors()
 
     day = {}
@@ -32,7 +39,7 @@ def main():
     #sensor.take_picture()
     #movement = sensor.movement_detection()
     #if movement:
-        #sensor.save_data_json(day)
+    #    sensor.save_data_json(day)
 
 '''
     Checks the status of the light level, battery,
@@ -52,10 +59,22 @@ def check_status(sensor, sck):
     #Checks the remaining space, if it is too low then send a msg
     storage = sensor.remaining_space()
 
+    #Crate an array which will be sent over the network
     data_array = [lumens, battery, accel[0], accel[1], storage]
 
     send_data(data_array, sck)
 
+def send_data(data_array, sck):
+    #timeout = time.time() + 60*3   # 3 minutes from now
+    #while True:
+    #   maxtime = 0
+
+    sck.send('@'.join(str(x) for x in data_array))
+
+    #time.sleep(5)
+    #if maxtime == 3 or time.time() > timeout:
+    #        break
+    #   maxtime = maxtime - 1
 
 '''
 Connects to the LoRaWAN.
@@ -93,18 +112,6 @@ def connect_to_lora():
     sck = socket.socket(socket.AF_LORA, socket.SOCK_RAW)
     sck.setblocking(False)
     return sck
-
-def send_data(data_array, sck):
-    #timeout = time.time() + 60*3   # 3 minutes from now
-    #while True:
-    #   maxtime = 0
-
-    sck.send('@'.join(str(x) for x in data_array))
-
-    #time.sleep(5)
-    #if maxtime == 3 or time.time() > timeout:
-    #        break
-    #   maxtime = maxtime - 1
 
 if __name__ == '__main__':
     main()

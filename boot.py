@@ -1,3 +1,11 @@
+'''
+ Sverre Coucheron (sverre.coucheron@gmail.com),
+ Martin Stensen (martin.stensen92@gmail.com) and
+ Vebjørn Haugland (vha044@post.uit.no)
+
+ Developed spring 2017 for INF-3910-2
+'''
+
 # boot.py -- run on boot-up
 import os
 from machine import UART

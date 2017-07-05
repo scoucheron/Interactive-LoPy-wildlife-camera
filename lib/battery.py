@@ -1,5 +1,6 @@
 import machine
 
+#Pretty hacky-ish way to measure the battery level (Not tested enough, yet)
 def measure():
     numADCreadings = const(100)
     adc = machine.ADC(0)
