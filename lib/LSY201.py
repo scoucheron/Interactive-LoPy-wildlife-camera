@@ -14,7 +14,6 @@
     several occasions if reset is called before the camera is finished returning
     a photo.
 """
-
 import utime
 import machine
 import ubinascii as b2a
@@ -25,7 +24,6 @@ class LSY:
         self.uart = machine.UART(uartID)
         self.uart.init(self.baudRate, bits=8, parity=None, stop=1)
         self.reset()
-
         self.setResolution('160x120')
 
     def _transmit(self,hexPack):
@@ -100,9 +98,6 @@ class LSY:
         returned = self._receive(5)
         assert returned == b'7600310000', "In setResolution: Receive error . {}".format(returned)
 
-
-
-
     def _getSize(self):
         n = self._transmit(b'5600340100')
         assert n==5, "In _getSize: Receive error "
@@ -130,85 +125,32 @@ class LSY:
         assert n == 16, 'In _savePicture: Transmit error'
         returned = self._receive(5)
         assert returned == b'7600320000', 'In takePicture: Receive error. {}'.format(returned)
-        # print(self.uart.any())
-        # for i in range(20):
-        #     utime.sleep(2**i*st)
-        #     print(2**i*st,self.uart.any())
-        #
-        # return
+
         utime.sleep(st)
-
-        # A=[]
-        # while self.uart.any():
-        #     A.append(self.uart.read(m))
-        #     utime.sleep(st)
-        #
-        # utime.sleep(st)
-        # returned = b2a.hexlify((A[-1])[-5:])
-        # assert returned == b'7600320000', 'In takePicture: Receive error. {}'.format(returned)
-        #
-        # (A[-1]) = (A[-1])[:-5]
-
-        # l = 0
-        # f = open(filename,'w')
-        # for a in A:
-        #     b=b2a.hexlify(a)
-        #
-        #     print(b)
-        #     l += f.write(b)
-        # f.close()
-        # print('l=',l)
 
         f = open(filename,'w')
 
         ## Fails if last 7 bits doesn't come in same read
         while True:
             tmp = self.uart.read(m)
+            print("********\n")
             print(b2a.hexlify(tmp))
+            print("********\n")
+            #print("\n********\n\n")
+            #print(b2a.hexlify(tmp))
+            #print("\n********\n\n")
+
             if b2a.hexlify(tmp[-7:]) == b'ffd97600320000':
-                print('make ends meet')
                 f.write(tmp[:-5])
+                break
             else:
                 f.write(tmp)
                 if not self.uart.any():
                     utime.sleep(1)
 
         f.close()
-
-        # print(b2a.hexlify(tmp))
-
         utime.sleep(st)
-        # returned = self._receive(5)
-        # assert returned == b'7600320000', 'In takePicture: Receive error. {}'.format(returned)
 
-        # f = open(filename,'w')
-        # f.write(pic)
-        # f.close()
-
-        return
-
-        picture = b''
-
-        # picture = self._receive(2)
-        # assert picture == b'ffd8'
-        while True:
-            tmp = self._receive(8)
-            print(tmp)
-            picture += tmp
-            utime.sleep(int(XXXX,16)*0.02)
-            # if (tmp[0:4]==b'FFD9' or tmp[2:6]==b'FFD9' or tmp[4:8]==b'FFD9' or
-            #     tmp[6:10]==b'FFD9' or tmp[8:12]==b'FFD9' or tmp[10:14]==b'FFD9' or
-            #     tmp[12:16]==b'FFD9'):
-            if tmp[-4:]==b'ffd9':
-                print('ffd9')
-                break
-            if self.uart.any() < 8:
-                print('end')
-                picture+= self._receive(self.uart.any())
-                break
-
-
-        return picture
 
     def stopTakingPictures(self):
         n = self._transmit(b'5600360103')

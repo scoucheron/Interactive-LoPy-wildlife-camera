@@ -1,3 +1,11 @@
+'''
+ Sverre Coucheron (sverre.coucheron@gmail.com),
+ Martin Stensen (martin.stensen92@gmail.com) and
+ Vebjørn Haugland (vha044@post.uit.no)
+
+ Developed spring 2017 for INF-3910-2
+'''
+
 from network import LoRa
 import machine
 import socket
@@ -18,7 +26,9 @@ def main():
     #Initialize the time
     #rtc = machine.RTC()
     #rtc.init((2014, 5, 1, 4, 13, 0, 0, 0))
-    sck = connect_to_lora()
+    # sck = connect_to_lora()
+    sck = 0
+
     sensor = sensors.Sensors()
 
     day = {}
@@ -27,14 +37,10 @@ def main():
     # Every 24 hours, do a check on battery, light, acceleration and how much storage is left
     # while(True):
     # check_status(sck)
-    time.sleep(2)
+    # time.sleep(30)
 
     sensor.movement_detection(sensor, day)
 
-    #sensor.take_picture()
-    #movement = sensor.movement_detection()
-    #if movement:
-        #sensor.save_data_json(day)
 
 '''
     Checks the status of the light level, battery,
@@ -46,21 +52,21 @@ def check_status(sck):
 
     print ("Checking status")
     #Check the light level, if it is too low then send a msg
-    # lumens = sensor.light_level()
+    lumens = sensor.light_level()
 
     #Check the battery level, if it is too low then send a msg
-    # battery = sensor.battery_level()
+    battery = sensor.battery_level()
 
     #Checks the acceleration, if it is too low then send a msg
-    # accel = sensor.acceleration()
+    accel = sensor.acceleration()
 
 
     #Checks the remaining space, if it is too low then send a msg
-    # storage = sensor.remaining_space()
+    storage = sensor.remaining_space()
 
-    # data_array = [lumens, battery, accel[0], accel[1], storage]
+    data_array = [lumens, battery, accel[0], accel[1], storage]
 
-    # send_data(data_array, sck)
+    send_data(data_array, sck)
 
 
 '''
@@ -73,12 +79,12 @@ def connect_to_lora():
 
     # create an OTAA authentication parameters
 
-    #SVERRE:
+    #KEY SVERRE:
     # dev_eui = binascii.unhexlify("000000000000010b")
     # app_eui = binascii.unhexlify("0000000000000050")
     # app_key = binascii.unhexlify("5939673537414b332b33665352554b6d")
 
-    #MARTIN:
+    #KEY MARTIN:
     dev_eui = binascii.unhexlify("000000000000010f")
     app_eui = binascii.unhexlify("0000000000000052")
     app_key = binascii.unhexlify("38697962673466394c796a53746e6d74")
